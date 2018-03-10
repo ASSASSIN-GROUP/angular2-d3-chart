@@ -19,13 +19,14 @@ export class AppComponent implements OnInit {
   private x: any;
   private y: any;
   private svg: any;
+  private div: any;
   private line: d3Shape.Line<[number, number]>;
   private highAlert: number;
   private lowAlert: number;
   isDataAvailable: boolean;
 
   constructor() {
-    this.width = 960 - this.margin.left - this.margin.right;
+    this.width = 1000 - this.margin.left - this.margin.right;
     this.height = 500 - this.margin.top - this.margin.bottom;
     this.highAlert = 5.7;
     this.lowAlert = 5.3;
@@ -33,20 +34,14 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.div = d3.select("body")
+      .append("div")
+      .attr("class", "tooltip")
+      .style("opacity", 0);
     this.reinitSvg(this.highAlert, this.lowAlert);
     this.initAxis();
     this.drawAxis();
     this.drawLine();
-  }
-
-  private initSvg() {
-    this.svg = d3.select("#visualisation")
-      .append("g")
-      .attr("width", this.width + this.margin.left + this.margin.right)
-      .attr("height", this.height + this.margin.top + this.margin.bottom)
-      .attr("id", "svg")
-      .append("g").attr("transform",
-        "translate(" + this.margin.left + "," + this.margin.top + ")");
   }
 
   private initAxis() {
@@ -180,20 +175,46 @@ export class AppComponent implements OnInit {
   }
 
   private drawCircle() {
-    for (var j = 0; j < Stocks.length; j++) {
+    var vm = this;
+    var specialPt = [];
+    for (var j = 0; j < Stocks.length - 1; j++) {
       if (Stocks[j].value > this.highAlert || Stocks[j].value < this.lowAlert) {
         var cX = this.width * j / (Stocks.length - 1);
         var cY = this.getY(Stocks, Stocks[j].value);
+        specialPt.push(Stocks[j]);
+
+        this.svg.data(specialPt).append("circle")
+          .attr('id', j)
+          .attr("r", 5)
+          .attr("cx", function () { return cX; })
+          .attr("cy", function () { return cY; })
+          .style('stroke', 'red')
+          .on("mouseover", function () {
+            vm.div.transition()
+              .duration(200)
+              .style("opacity", .9);
+            // vm.div.html(this.id + "<br/>" + Stocks[this.id].value)
+            vm.div.html( '(' + this.id + ', ' + Stocks[this.id].value + ')')
+              .style("left", (d3.event.pageX) + "px")
+              .style("top", (d3.event.pageY - 28) + "px");
+          })
+          .on("mouseout", function () {
+            vm.div.transition()
+              .duration(500)
+              .style("opacity", 0);
+          });
 
         this.svg.append('circle')
           .attr('cx', cX)
           .attr('cy', cY)
-          .attr('r', 20)
+          .attr('r', 15)
           .style('stroke-width', 2)
           .style("fill", "none")
-          .style('stroke', 'red');
+          .style('stroke', 'red')
+          ;
       }
     }
   }
+
 
 }

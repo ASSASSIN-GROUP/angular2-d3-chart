@@ -15,5 +15,4 @@ export const Stocks: Stock[] = [
     { scale: 8, value: 5.2 },
     { scale: 9, value: 5.51 },
     { scale: 10, value: 5.5 },
-    { scale: 11, value: 5.04}
 ];
